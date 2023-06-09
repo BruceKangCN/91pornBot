@@ -3,6 +3,10 @@
 
  [English](./README_en.md)  |  [历史更新日志](./his.md) | [docker镜像](https://hub.docker.com/repository/docker/jwstar/pybot)
 
+
+仓库不再维护，请自行debug 排查问题
+
+
 ###  特点
 
 好色视频链接支持（补充作者删除的视频）
