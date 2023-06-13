@@ -10,8 +10,10 @@ from urllib import parse
 import aiohttp
 import cv2
 import jieba
+
 # 分词
 from tenacity import retry, stop_after_attempt, wait_fixed
+
 
 headers = None
 jieba.setLogLevel(logging.ERROR)
@@ -26,14 +28,11 @@ if platform.system().lower() == 'windows':
 elif platform.system().lower() == 'linux':
     proxy = None
     proxies = None
-    # for root, dirs, files in os.walk("/root/.cache/ms-playwright/", topdown=False):
-    #     for name in files:
-    #         if name == 'ffmpeg-linux':
-    #             ffmpe_root = os.path.join(root, name)
 
 
-# 读取停用词列表
 def get_stopword_list(file):
+    """读取停用词列表"""
+
     with open(file, 'r', encoding='utf-8') as f:  #
         stopword_list = [word.strip('\n') for word in f.readlines()]
     return stopword_list
@@ -58,7 +57,6 @@ async def seg(str):
 
 @retry(stop=stop_after_attempt(4), wait=wait_fixed(10))
 async def imgCover(input, output):
-    # ffmpeg -i 001.jpg -vf 'scale=320:320'  001_1.jpg
     print('截图入参:', input, output)
     command = '''%s -i  "%s" -y -loglevel quiet "%s" ''' % (
         ffmpe_root, input, output)
@@ -72,8 +70,9 @@ async def imgCover(input, output):
     print(f'[{command!r} exited with {proc.returncode}]')
 
 
-# 截取视频
 async def segVideo(input, output, start='25', end=''):
+    """截取视频"""
+
     if end != '':
         command = '%s -ss %s -i "%s" -y -c:v copy -c:a copy -avoid_negative_ts 1 -t %s -loglevel quiet "%s" ' % (
             ffmpe_root,
@@ -103,8 +102,9 @@ def getVideoDuration(input):
     return -1
 
 
-# 检查字符串出现次数
 def checkStrCount(str_source, str_check):  # str_source：源字符串；str_check：要检查字符
+    """检查字符串出现次数"""
+
     splits = str_source.split(str_check)  # 返回拆分数组
     return len(splits) - 1  # 返回拆分次数-1
 
@@ -124,8 +124,6 @@ async def imgCoverFromFile(input, output):
     print(f'[{command!r} exited with {proc.returncode}]')
 
 
-# asyncio.get_event_loop().run_until_complete( imgCoverFromFile('754744.jpg','out.png'))
-
 
 async def genIpaddr():
     m = random.randint(0, 255)
@@ -135,9 +133,10 @@ async def genIpaddr():
     return str(m) + '.' + str(n) + '.' + str(x) + '.' + str(y)
 
 
-# 下载任务
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(2))
 async def run(session, url, viewkey, sem=asyncio.Semaphore(500)):
+    """下载任务"""
+
     async with sem:
         if url.endswith('.mp4'):
             filename = viewkey + '.mp4'
@@ -167,8 +166,9 @@ async def run(session, url, viewkey, sem=asyncio.Semaphore(500)):
     # print("\r", '任务文件 ', filename, ' 下载成功', end="", flush=True)
 
 
-# 读出ts列表，并写入文件列表到文件，方便后面合并视频
 async def down(url, viewkey):
+    """读出ts列表，并写入文件列表到文件，方便后面合并视频"""
+
     async with aiohttp.request("GET", url) as r:
         m3u8_text = await r.text()
         if 'index.m3u8' in m3u8_text:
@@ -219,8 +219,9 @@ async def down(url, viewkey):
         return ts_list, concatfile
 
 
-# 视频合并方法，使用ffmpeg
 async def merge(concatfile, viewkey):
+    """视频合并方法，使用ffmpeg"""
+
     try:
         path = f'{viewkey}/{viewkey}.mp4'
         command = '''%s -y -f concat -i "%s" -bsf:a aac_adtstoasc  -c copy   "%s"''' % (

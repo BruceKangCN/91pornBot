@@ -52,7 +52,6 @@ class VideoInfo(object):
     pass
 
 
-
 async def getVideoInfo91(url):
     videoinfo = VideoInfo()
     err_msg = None
@@ -105,9 +104,7 @@ async def getVideoInfo91(url):
 
 
 async def getMaDou(url):
-    async with aiohttp.request("GET", url,
-                               # proxy='http://127.0.0.1:7890',
-                               ) as r:
+    async with aiohttp.request("GET", url) as r:
         text = await r.text()
 
         urls = re.findall('"url":"(.*?)","u', text)
@@ -119,9 +116,7 @@ async def getMaDou(url):
 
 
 async def getHs(url):
-    async with aiohttp.request("GET", url,
-                               # proxy='http://127.0.0.1:10809',
-                               ) as r:
+    async with aiohttp.request("GET", url) as r:
         text = await r.text()
         urls = re.findall('<source src="(.*?)"', text)
         titles = re.findall(r'<h3 class="panel-title">(.*?)<', text)
